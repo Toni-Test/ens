@@ -479,7 +479,7 @@ contract Registrar {
         _eraseNode(labels.length - 1, labels, rootNode);
     }
 
-    function _eraseNode(bytes32 label) {
+    function _eraseNode(bytes32 label) internal {
         ens.setSubnodeOwner(rootNode, label, address(this));
         var node = sha3(rootNode, label);
         ens.setResolver(node, 0);
