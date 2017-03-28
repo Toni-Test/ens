@@ -428,7 +428,7 @@ contract Registrar {
 
         // If we're the registrar, zero out the address and resolver in ENS.
         if(ens.owner(rootNode) == address(this)) {
-            _eraseNode(_hash);
+            _eraseSingleNode(_hash);
         }
         deedContract.closeDeed(1000);
     }  
@@ -448,7 +448,7 @@ contract Registrar {
         entry h = _entries[hash];
 
         if(ens.owner(rootNode) == address(this)) {
-            _eraseNode(hash);
+            _eraseSingleNode(hash);
         }
 
         if(address(h.deed) != 0) {
@@ -476,24 +476,24 @@ contract Registrar {
         if(labels.length == 0) throw;
         if(state(labels[labels.length - 1]) == Mode.Owned) throw;
 
-        _eraseNode(labels.length - 1, labels, rootNode);
+        _eraseNodeHierarchy(labels.length - 1, labels, rootNode);
     }
 
-    function _eraseNode(bytes32 label) internal {
+    function _eraseSingleNode(bytes32 label) internal {
         ens.setSubnodeOwner(rootNode, label, address(this));
         var node = sha3(rootNode, label);
         ens.setResolver(node, 0);
         ens.setOwner(node, 0);
     }
 
-    function _eraseNode(uint idx, bytes32[] labels, bytes32 node) internal {
+    function _eraseNodeHierarchy(uint idx, bytes32[] labels, bytes32 node) internal {
         // Take ownership of the node
         ens.setSubnodeOwner(node, labels[idx], address(this));
         node = sha3(node, labels[idx]);
         
         // Recurse if there's more labels
         if(idx > 0)
-            _eraseNode(idx - 1, labels, node);
+            _eraseNodeHierarchy(idx - 1, labels, node);
 
         // Erase the resolver and owner records
         ens.setResolver(node, 0);
